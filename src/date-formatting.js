@@ -1,27 +1,25 @@
 
 // Single Date Formatting
 // -------------------------------------------------------------------------------------------------
-
-
 // call this if you want Moment's original format method to be used
-function oldMomentFormat(mom, formatStr) {
-	return oldMomentProto.format.call(mom, formatStr); // oldMomentProto defined in moment-ext.js
+function oldMomentFormat(mom, formatStr, isJalaali) {
+	return oldMomentProto.format.call(mom, toJalaaliUnit(formatStr, isJalaali)).replace(/j/g, ""); // oldMomentProto defined in moment-ext.js				return oldMomentProto.format.call(mom, toJalaaliUnit(formatStr, isJalaali)).replace(/j/g,""); // oldMomentProto defined in moment-ext.js
 }
 
 
 // Formats `date` with a Moment formatting string, but allow our non-zero areas and
 // additional token.
-function formatDate(date, formatStr) {
-	return formatDateWithChunks(date, getFormatStringChunks(formatStr));
+function formatDate(date, formatStr, isJalaali) {
+	return formatDateWithChunks(date, getFormatStringChunks(formatStr, isJalaali), isJalaali);
 }
 
 
-function formatDateWithChunks(date, chunks) {
+function formatDateWithChunks(date, chunks, isJalaali) {
 	var s = '';
 	var i;
 
 	for (i=0; i<chunks.length; i++) {
-		s += formatDateWithChunk(date, chunks[i]);
+		s += formatDateWithChunk(date, chunks[i], isJalaali);
 	}
 
 	return s;
@@ -30,16 +28,16 @@ function formatDateWithChunks(date, chunks) {
 
 // addition formatting tokens we want recognized
 var tokenOverrides = {
-	t: function(date) { // "a" or "p"
-		return oldMomentFormat(date, 'a').charAt(0);
+	t: function(date, isJalaali) { // "a" or "p"
+		return oldMomentFormat(date, 'a', isJalaali).charAt(0);
 	},
-	T: function(date) { // "A" or "P"
-		return oldMomentFormat(date, 'A').charAt(0);
+	T: function(date, isJalaali) { // "A" or "P"
+		return oldMomentFormat(date, 'A', isJalaali).charAt(0);
 	}
 };
 
 
-function formatDateWithChunk(date, chunk) {
+function formatDateWithChunk(date, chunk, isJalaali) {
 	var token;
 	var maybeStr;
 
@@ -48,12 +46,12 @@ function formatDateWithChunk(date, chunk) {
 	}
 	else if ((token = chunk.token)) { // a token, like "YYYY"
 		if (tokenOverrides[token]) {
-			return tokenOverrides[token](date); // use our custom token
+			return tokenOverrides[token](date, isJalaali); // use our custom token
 		}
-		return oldMomentFormat(date, token);
+		return oldMomentFormat(date, token, isJalaali);
 	}
 	else if (chunk.maybe) { // a grouping of other chunks that must be non-zero
-		maybeStr = formatDateWithChunks(date, chunk.maybe);
+		maybeStr = formatDateWithChunks(date, chunk.maybe, isJalaali);
 		if (maybeStr.match(/[1-9]/)) {
 			return maybeStr;
 		}
@@ -71,7 +69,7 @@ function formatDateWithChunk(date, chunk) {
 // "Sep 2 - 9 2013", that intelligently inserts a separator where the dates differ.
 // If the dates are the same as far as the format string is concerned, just return a single
 // rendering of one date, without any separator.
-function formatRange(date1, date2, formatStr, separator, isRTL) {
+function formatRange(date1, date2, formatStr, separator, isRTL, isJalaali) {
 	var localeData;
 
 	date1 = FC.moment.parseZone(date1);
@@ -89,15 +87,16 @@ function formatRange(date1, date2, formatStr, separator, isRTL) {
 	return formatRangeWithChunks(
 		date1,
 		date2,
-		getFormatStringChunks(formatStr),
+		getFormatStringChunks(formatStr, isJalaali),
 		separator,
-		isRTL
+		isRTL,
+		isJalaali
 	);
 }
 FC.formatRange = formatRange; // expose
 
 
-function formatRangeWithChunks(date1, date2, chunks, separator, isRTL) {
+function formatRangeWithChunks(date1, date2, chunks, separator, isRTL, isJalaali) {
 	var unzonedDate1 = date1.clone().stripZone(); // for formatSimilarChunk
 	var unzonedDate2 = date2.clone().stripZone(); // "
 	var chunkStr; // the rendering of the chunk
@@ -113,7 +112,7 @@ function formatRangeWithChunks(date1, date2, chunks, separator, isRTL) {
 	// Start at the leftmost side of the formatting string and continue until you hit a token
 	// that is not the same between dates.
 	for (leftI=0; leftI<chunks.length; leftI++) {
-		chunkStr = formatSimilarChunk(date1, date2, unzonedDate1, unzonedDate2, chunks[leftI]);
+		chunkStr = formatSimilarChunk(date1, date2, unzonedDate1, unzonedDate2, chunks[leftI], isJalaali);
 		if (chunkStr === false) {
 			break;
 		}
@@ -122,7 +121,7 @@ function formatRangeWithChunks(date1, date2, chunks, separator, isRTL) {
 
 	// Similarly, start at the rightmost side of the formatting string and move left
 	for (rightI=chunks.length-1; rightI>leftI; rightI--) {
-		chunkStr = formatSimilarChunk(date1, date2, unzonedDate1, unzonedDate2,  chunks[rightI]);
+		chunkStr = formatSimilarChunk(date1, date2, unzonedDate1, unzonedDate2,  chunks[rightI], isJalaali);
 		if (chunkStr === false) {
 			break;
 		}
@@ -132,8 +131,8 @@ function formatRangeWithChunks(date1, date2, chunks, separator, isRTL) {
 	// The area in the middle is different for both of the dates.
 	// Collect them distinctly so we can jam them together later.
 	for (middleI=leftI; middleI<=rightI; middleI++) {
-		middleStr1 += formatDateWithChunk(date1, chunks[middleI]);
-		middleStr2 += formatDateWithChunk(date2, chunks[middleI]);
+		middleStr1 += formatDateWithChunk(date1, chunks[middleI], isJalaali);
+		middleStr2 += formatDateWithChunk(date2, chunks[middleI], isJalaali);
 	}
 
 	if (middleStr1 || middleStr2) {
@@ -169,7 +168,7 @@ var similarUnitMap = {
 
 // Given a formatting chunk, and given that both dates are similar in the regard the
 // formatting chunk is concerned, format date1 against `chunk`. Otherwise, return `false`.
-function formatSimilarChunk(date1, date2, unzonedDate1, unzonedDate2, chunk) {
+function formatSimilarChunk(date1, date2, unzonedDate1, unzonedDate2, chunk, isJalaali) {
 	var token;
 	var unit;
 
@@ -181,7 +180,7 @@ function formatSimilarChunk(date1, date2, unzonedDate1, unzonedDate2, chunk) {
 
 		// are the dates the same for this unit of measurement?
 		// use the unzoned dates for this calculation because unreliable when near DST (bug #2396)
-		if (unit && unzonedDate1.isSame(unzonedDate2, unit)) {
+		if (unit && unzonedDate1.isSame(unzonedDate2, toJalaaliUnit(unit, isJalaali))) {
 			return oldMomentFormat(date1, token); // would be the same if we used `date2`
 			// BTW, don't support custom tokens
 		}
@@ -199,7 +198,8 @@ function formatSimilarChunk(date1, date2, unzonedDate1, unzonedDate2, chunk) {
 var formatStringChunkCache = {};
 
 
-function getFormatStringChunks(formatStr) {
+function getFormatStringChunks (formatStr, isJalaali) {
+	formatStr = noJalaaliUnit (formatStr, isJalaali);
 	if (formatStr in formatStringChunkCache) {
 		return formatStringChunkCache[formatStr];
 	}

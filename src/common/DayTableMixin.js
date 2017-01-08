@@ -314,7 +314,7 @@ var DayTableMixin = FC.DayTableMixin = {
 		return '' +
             '<th class="' + classNames.join(' ') + '"' +
 				(this.rowCnt === 1 ?
-					' data-date="' + date.format('YYYY-MM-DD') + '"' :
+					' data-date="' + date.format('YYYY-MM-DD', this.isJalaali) + '"' :
 					'') +
 				(colspan > 1 ?
 					' colspan="' + colspan + '"' :
@@ -326,7 +326,7 @@ var DayTableMixin = FC.DayTableMixin = {
 				// don't make a link if the heading could represent multiple days, or if there's only one day (forceOff)
 				view.buildGotoAnchorHtml(
 					{ date: date, forceOff: this.rowCnt > 1 || this.colCnt === 1 },
-					htmlEscape(date.format(this.colHeadFormat)) // inner HTML
+					htmlEscape(date.format(this.colHeadFormat, this.isJalaali)) // inner HTML
 				) +
 			'</th>';
 	},
@@ -371,7 +371,7 @@ var DayTableMixin = FC.DayTableMixin = {
 		classes.unshift('fc-day', view.widgetContentClass);
 
 		return '<td class="' + classes.join(' ') + '"' +
-			' data-date="' + date.format('YYYY-MM-DD') + '"' + // if date has a time, won't format it
+			' data-date="' + date.format('YYYY-MM-DD', this.isJalaali) + '"' + // if date has a time, won't format it
 			(otherAttrs ?
 				' ' + otherAttrs :
 				'') +

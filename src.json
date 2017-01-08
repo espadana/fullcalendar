@@ -1,5 +1,6 @@
 {
   "fullcalendar.js": [
+    "jalaali.js",
     "intro.js",
     "main.js",
     "util.js",

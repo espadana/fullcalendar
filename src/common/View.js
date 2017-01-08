@@ -66,6 +66,7 @@ var View = FC.View = Class.extend(EmitterMixin, ListenerMixin, {
 		this.initThemingProps();
 		this.initHiddenDays();
 		this.isRTL = this.opt('isRTL');
+		this.isJalaali = this.opt('isJalaali');
 
 		this.eventOrderSpecs = parseFieldSpecs(this.opt('eventOrder'));
 
@@ -140,8 +141,14 @@ var View = FC.View = Class.extend(EmitterMixin, ListenerMixin, {
 	// Subclasses can override. Must return all properties.
 	computeRange: function(date) {
 		var intervalUnit = computeIntervalUnit(this.intervalDuration);
-		var intervalStart = date.clone().startOf(intervalUnit);
-		var intervalEnd = intervalStart.clone().add(this.intervalDuration);
+		var intervalStart = date.clone().startOf(toJalaaliUnit(intervalUnit, this.isJalaali));
+		var intervalEnd;
+		if (this.isJalaali && ( intervalUnit === "year" || intervalUnit === "month")) {
+			intervalEnd = intervalStart.clone().add(1, toJalaaliUnit(intervalUnit, this.isJalaali));
+		}
+		else {
+			intervalEnd = intervalStart.clone().add(this.intervalDuration);
+		}
 		var start, end;
 
 		// normalize the range's time-ambiguity
@@ -250,14 +257,14 @@ var View = FC.View = Class.extend(EmitterMixin, ListenerMixin, {
 	// Utility for formatting a range. Accepts a range object, formatting string, and optional separator.
 	// Displays all-day ranges naturally, with an inclusive end. Takes the current isRTL into account.
 	// The timezones of the dates within `range` will be respected.
-	formatRange: function(range, formatStr, separator) {
+	formatRange: function(range, formatStr, separator, isRTL, isJalaali) {
 		var end = range.end;
 
 		if (!end.hasTime()) { // all-day?
 			end = end.clone().subtract(1); // convert to inclusive. last ms of previous day
 		}
 
-		return formatRange(range.start, end, formatStr, separator, this.opt('isRTL'));
+		return formatRange(range.start, range.end, formatStr, separator, this.opt('isRTL'), this.opt('isJalaali'));
 	},
 
 

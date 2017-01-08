@@ -165,7 +165,7 @@ var DayGrid = FC.DayGrid = Grid.extend(DayTableMixin, {
 			}
 		}
 
-		html += '<td class="' + classes.join(' ') + '" data-date="' + date.format() + '">';
+		html += '<td class="' + classes.join(' ') + '" data-date="' + date.format(this.isJalaali) + '">' ;
 
 		if (this.view.cellWeekNumbersVisible && (date.day() == weekCalcFirstDoW)) {
 			html += this.view.buildGotoAnchorHtml(
@@ -179,7 +179,7 @@ var DayGrid = FC.DayGrid = Grid.extend(DayTableMixin, {
 			html += this.view.buildGotoAnchorHtml(
 				date,
 				{ 'class': 'fc-day-number' },
-				date.date() // inner HTML
+				(this.isJalaali  ? persianNumber(date.jDate()) :  date.date()) // inner HTML
 			);
 		}
 

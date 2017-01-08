@@ -373,7 +373,7 @@ function Calendar_constructor(element, overrides) {
 	// Accepts anything the vanilla moment() constructor accepts.
 	t.moment = function() {
 		var mom;
-
+		arguments = addJalaaliToArgs(arguments, t.options.isJalaali);
 		if (t.options.timezone === 'local') {
 			mom = FC.moment.apply(null, arguments);
 

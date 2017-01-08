@@ -57,8 +57,9 @@ gulp.task('archive:misc', function() {
 gulp.task('archive:deps', [ 'archive:jqui:theme' ], function() {
 	return gulp.src([
 		'node_modules/moment/min/moment.min.js',
+		'node_modules/moment-jalaali/build/moment-jalaali.js',
 		'node_modules/jquery/dist/jquery.min.js',
-		'node_modules/components-jqueryui/jquery-ui.min.js'
+		'node_modules/components-jqueryui/jquery-ui.min.js',
 	])
 	.pipe(gulp.dest('tmp/' + packageId + '/lib/'));
 });
@@ -95,6 +96,7 @@ var demoPathReplace = replace(
 function transformDemoPath(path) {
 	// reroot 3rd party libs
 	path = path.replace('../node_modules/moment/', '../lib/');
+	path = path.replace('../node_modules/moment-jalaali/', '../lib/');
 	path = path.replace('../node_modules/jquery/dist/', '../lib/');
 	path = path.replace('../node_modules/components-jqueryui/themes/cupertino/', '../lib/cupertino/'); // must be first
 	path = path.replace('../node_modules/components-jqueryui/', '../lib/');

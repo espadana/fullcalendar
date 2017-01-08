@@ -55,6 +55,9 @@ FC.moment.parseZone = function() {
 //    parseAsUTC - if there is no zone information, should we parse the input in UTC?
 //    parseZone - if there is zone information, should we force the zone of the moment?
 function makeMoment(args, parseAsUTC, parseZone) {
+	// Called from -> jalaali.js
+	var isJalaali = checkArgsForJalaali(args);
+	args = delJalaaliFromArgs(args);
 	var input = args[0];
 	var isSingleString = args.length == 1 && typeof input === 'string';
 	var isAmbigTime;
@@ -110,6 +113,10 @@ function makeMoment(args, parseAsUTC, parseZone) {
 	}
 
 	mom._fullCalendar = true; // flag for extended functionality
+
+	if (isJalaali){ // if jalaali calendar was enabled load Persian Locale from moment
+		moment.loadPersian();
+	}
 
 	return mom;
 }
@@ -297,24 +304,28 @@ newMomentProto.utcOffset = function(tzo) {
 // -------------------------------------------------------------------------------------------------
 
 newMomentProto.format = function() {
+
+	var isJalaali = checkArgsForJalaali(arguments); // check if jalaali is enabled
+	arguments = delJalaaliFromArgs(arguments); // remove it from arguments
+
 	if (this._fullCalendar && arguments[0]) { // an enhanced moment? and a format string provided?
-		return formatDate(this, arguments[0]); // our extended formatting
+		return formatDate(this, arguments[0], isJalaali); // our extended formatting
 	}
 	if (this._ambigTime) {
-		return oldMomentFormat(this, 'YYYY-MM-DD');
+		return oldMomentFormat(this, 'YYYY-MM-DD', isJalaali);
 	}
 	if (this._ambigZone) {
-		return oldMomentFormat(this, 'YYYY-MM-DD[T]HH:mm:ss');
+		return oldMomentFormat(this, 'YYYY-MM-DD[T]HH:mm:ss', isJalaali);
 	}
 	return oldMomentProto.format.apply(this, arguments);
 };
 
 newMomentProto.toISOString = function() {
 	if (this._ambigTime) {
-		return oldMomentFormat(this, 'YYYY-MM-DD');
+		return oldMomentFormat(this, 'YYYY-MM-DD', isJalaali);
 	}
 	if (this._ambigZone) {
-		return oldMomentFormat(this, 'YYYY-MM-DD[T]HH:mm:ss');
+		return oldMomentFormat(this, 'YYYY-MM-DD[T]HH:mm:ss', isJalaali);
 	}
 	return oldMomentProto.toISOString.apply(this, arguments);
 };
