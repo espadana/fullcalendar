@@ -28,7 +28,9 @@
   },
   "main": [
     "dist/fullcalendar.js",
-    "dist/fullcalendar.css"
+    "dist/fullcalendar.css",
+    "dist/locale-all.js",
+    "dist/gcal.js"
   ],
   "ignore": [
     "*",
